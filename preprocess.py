@@ -112,11 +112,11 @@ def mp_handler(job):
 def dump_split(args):
 	print('Started processing for {} with {} CPU cores'.format(args.split, args.num_workers))
 
-	filelist = [path.join(args.videos_data_root, ('pretrain' if args.split == 'pretrain' else 'main'), 
+	filelist = [path.join("/Users/ethanchung/Programming/cs147/final_project/LipGAN-fully_pythonic/"+args.videos_data_root, ('pretrain' if args.split == 'pretrain' else ''), 
 				'{}.mp4'.format(line.strip())) \
 				for line in open(path.join(args.filelists, '{}.txt'.format(args.split))).readlines()]
 	
-	jobs = [(vfile, args, ('pretrain' if args.split == 'pretrain' else 'main')) for vfile in filelist]
+	jobs = [(vfile, args, ('pretrain' if args.split == 'pretrain' else '')) for vfile in filelist]
 	p = ThreadPoolExecutor(args.num_workers)
 	futures = [p.submit(mp_handler, j) for j in jobs]
 	_ = [r.result() for r in tqdm(as_completed(futures), total=len(futures))]
@@ -134,6 +134,8 @@ parser.add_argument("--final_data_root", help="Folder where preprocessed files w
 parser.add_argument("--img_size", help="Square face image to resize to", default=96, type=int)
 
 args = parser.parse_args()
+print(args)
+print("fds")
 
 if __name__ == '__main__':
 	dump_split(args)
