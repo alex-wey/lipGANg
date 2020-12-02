@@ -3,8 +3,8 @@ import numpy as np
 import scipy
 import cv2
 import os, sys
-import discriminator as md
-import generator as mg
+import discriminator2 as Discriminator_Model
+import generator as Generator_model  # TODO: aLEx make sure this import matches and is correct
 from keras.callbacks import ModelCheckpoint, Callback
 from keras.utils import plot_model
 from tqdm import tqdm
@@ -113,25 +113,20 @@ else:
 
 print ("Will be training on {} images".format(len(args.all_images)))
 
-if args.model == 'residual':
-	gen = mg.create_model_residual(args, mel_step_size)
-else:
-	gen = mg.create_model(args, mel_step_size)
+# Initialize the generator and the Discriminator
+gen = Generator_Model()
+disc = Discriminator_Model() # Pytorch
 
-disc = md.create_model(args, mel_step_size)
-comb = mg.create_combined_model(gen, disc, args, mel_step_size)
-
+# Use an already-created generator or discriminator
 if args.resume_gen:
-	gen.load_weights(args.resume_gen)
+	gen.load_state_dict(torch.load(args.resume_gen))
 	print('Resuming generator from : {}'.format(args.resume_gen))
 if args.resume_disc:
-	disc.load_weights(args.resume_disc)
+	disc.load_state_dict(torch.load(args.resume_dicc))
 	print('Resuming discriminator from : {}'.format(args.resume_disc))
 
 args.batch_size = args.n_gpu * args.batch_size
 train_datagen = datagen(args)
-
-comb.summary()
 
 for e in range(args.epochs):
 	prog_bar = tqdm(range(len(args.all_images) // args.batch_size))
@@ -142,8 +137,9 @@ for e in range(args.epochs):
 		real = np.zeros((len(real_faces), 1))
 		fake = np.ones((len(real_faces), 1))
 
-		gen_fakes = gen.predict([dummy_faces, audio]) # predict fakes
+		gen_fakes = gen([audio, dummy_faces]) # predict fakes
 
+### TODO: Adjust / convert everything below this line
 		### Train discriminator
 		if np.random.choice([True, False]):
 			disc_loss += disc.train_on_batch([gen_fakes, audio], fake)
