@@ -82,8 +82,7 @@ class Discriminator_Model(nn.Module):
 		face_embedding = l2_normalize(face_embedding)
 		audio_embedding = l2_normalize(audio_embedding)
 
-		d = Lambda(lambda x: torch.sqrt(torch.sum(torch.square(x[0] - x[1]), dim=1, keepdim=True))) ([face_embedding,
-																			audio_embedding])
+		d = Lambda(lambda x: torch.sqrt(torch.sum(torch.square(x[0] - x[1]), dim=1, keepdim=True)))([face_embedding,audio_embedding])
 		
 		return d
 
