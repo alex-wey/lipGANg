@@ -47,7 +47,7 @@ class Discriminator_Model(nn.Module):
         self.audioConv6 = nn.conv2D(512, 512, kernel_size=1, stride=1, padding=1)
         self.audioInstanceNorm6 = nn.InstanceNorm2d(512)
   
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
         
 	def contrastive_loss(y_true, y_pred):
 		margin = 1.

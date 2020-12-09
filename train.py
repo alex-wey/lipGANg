@@ -4,9 +4,8 @@ import scipy
 import cv2
 import os, sys
 import discriminator2 as Discriminator_Model
-import generator as Generator_model  # TODO: aLEx make sure this import matches and is correct
-from keras.callbacks import ModelCheckpoint, Callback
-from keras.utils import plot_model
+import torch
+import Generator_Model
 from tqdm import tqdm
 from glob import glob
 import pickle, argparse
@@ -25,7 +24,7 @@ def get_audio_segment(center_frame, spec):
 	center_frame_id = frame_id(center_frame)
 	start_frame_id = center_frame_id - half_window_size
 
-	start_idx = int((80./25.) * start_frame_id) # 25 is fps of LRS2
+	start_idx = int((80.0/25.0) * start_frame_id) # 25 is fps of LRS2
 	end_idx = start_idx + mel_step_size
 
 	return spec[:, start_idx : end_idx] if end_idx <= spec.shape[1] else None
@@ -114,8 +113,13 @@ else:
 print ("Will be training on {} images".format(len(args.all_images)))
 
 # Initialize the generator and the Discriminator
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 gen = Generator_Model()
 disc = Discriminator_Model() # Pytorch
+
+gen = gen.to(device)
+disc = disc.to(device)
 
 # Use an already-created generator or discriminator
 if args.resume_gen:
@@ -133,25 +137,37 @@ for e in range(args.epochs):
 	disc_loss, unsync_loss, sync_loss, gen_loss_mae, gen_loss_adv = 0., 0., 0., 0., 0.
 	prog_bar.set_description('Starting epoch {}'.format(e))
 	for batch_idx in prog_bar:
+		gen.train()
+		disc.train()
+
 		(dummy_faces, audio), real_faces = next(train_datagen)
 		real = np.zeros((len(real_faces), 1))
 		fake = np.ones((len(real_faces), 1))
 
-		gen_fakes = gen([audio, dummy_faces]) # predict fakes
+		gen_fakes = gen(audio, dummy_faces) # predict fake
 
 ### TODO: Adjust / convert everything below this line
-		### Train discriminator
-		if np.random.choice([True, False]):
-			disc_loss += disc.train_on_batch([gen_fakes, audio], fake)
-			unsync_loss += disc.test_on_batch([real_faces, np.roll(audio, 10, axis=0)], fake)
-		else:
-			disc_loss += disc.test_on_batch([gen_fakes, audio], fake)
-			unsync_loss += disc.train_on_batch([real_faces, np.roll(audio, 10, axis=0)], fake)
+		### Train Discriminator
+		disc.optimizer.zero_grad()
+		gen.optimizer.zero_grad()
 
-		sync_loss += disc.train_on_batch([real_faces, audio], real)
+		# Replaced: disc_loss += disc.train_on_batch...
+		d_output = disc(gen_fakes, mel_step_size, fake)
+		d_loss += disc.contrastive_loss(fake, d_output)
 
-		### Train generator
-		total, mae, adv = comb.train_on_batch([dummy_faces, audio], [real_faces, real])
+		# Replaced: disc_loss += disc.test_on_batch...
+		disc.eval()
+		with torch.nograd:
+			d_test_out = disc(real_faces, mel_step_size, fake)
+			d_unsync_loss = disc.contrastive_loss(fake, d_test_out)
+		disc.train()
+
+		# Replace: disc.train_on_batch([real_faces, audio], real)
+		d_sync_out = disc(real_faces, mel_step_size, real)
+		d_sync_loss += disc.contrastive_loss(real, d_sync_out)
+
+		### Train generator 
+		total, mae, adv = gen.train_on_batch([dummy_faces, audio], [real_faces, real])
 		gen_loss_mae += mae
 		gen_loss_adv += adv
 

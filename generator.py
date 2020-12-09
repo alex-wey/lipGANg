@@ -44,18 +44,18 @@ class Generator_Model(nn.Module):
         """
         super(Generator_Model, self).__init__()
 
+        # Optimizer
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=0.001, betas=(0.5, 0.999))
+
         # audio encoder
         self.audio_encoder = nn.Sequential(
             conv_block(1, 32, kernel_size=3, stride=1, padding=1),
-            # conv_block(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
 
             conv_block(32, 64, kernel_size=3, stride=(3, 1), padding=1),
-            # conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
 
             conv_block(64, 128, kernel_size=3, stride=3, padding=1),
-            # conv_block(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
 
             conv_block(128, 256, kernel_size=3, stride=(3, 2), padding=1),
@@ -70,20 +70,15 @@ class Generator_Model(nn.Module):
             nn.Sequential(conv_block(6, 16, kernel_size=7, stride=1, padding=3)),
 
             nn.Sequential(conv_block(16, 32, kernel_size=3, stride=2, padding=1),
-            # conv_block(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(32, 32, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_block(32, 64, kernel_size=3, stride=2, padding=1),
-            # conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
-            # conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_block(64, 128, kernel_size=3, stride=2, padding=1),
-            # conv_block(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(128, 128, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_block(128, 256, kernel_size=3, stride=2, padding=1),
-            # conv_block(256, 256, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(256, 256, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_block(256, 512, kernel_size=3, stride=2, padding=1),
@@ -101,23 +96,18 @@ class Generator_Model(nn.Module):
             conv_block(512, 512, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(1024, 512, kernel_size=3, stride=2, padding=1, output_padding=1),
-            # conv_block(512, 512, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(512, 512, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(768, 384, kernel_size=3, stride=2, padding=1, output_padding=1),
-            # conv_block(384, 384, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(384, 384, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(512, 256, kernel_size=3, stride=2, padding=1, output_padding=1),
-            # conv_block(256, 256, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(256, 256, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(320, 128, kernel_size=3, stride=2, padding=1, output_padding=1), 
-            # conv_block(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(128, 128, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(160, 64, kernel_size=3, stride=2, padding=1, output_padding=1),
-            # conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
             conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True))
             ])
 
