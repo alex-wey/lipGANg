@@ -33,7 +33,7 @@ class Discriminator_Model(nn.Module):
         self.instanceNorm4 = nn.InstanceNorm2d(512)
         self.conv5 = nn.Conv2d(512, 512, kernel_size=3, stride=2, padding=1)
         self.instanceNorm5 = nn.InstanceNorm2d(512)
-        self.conv6 = nn.Conv2d(filters=512, kernel_size=3, strides=1, padding=0)
+        self.conv6 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=0)
         
         # Audio encoder layers
         self.audioConv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
@@ -46,7 +46,7 @@ class Discriminator_Model(nn.Module):
         self.audioInstanceNorm4 = nn.InstanceNorm2d(256)
         self.audioConv5 = nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=0)	#1X1
         self.audioInstanceNorm5 = nn.InstanceNorm2d(512)
-        self.audioConv6 = nn.conv2D(512, 512, kernel_size=1, stride=1, padding=1)
+        self.audioConv6 = nn.Conv2d(512, 512, kernel_size=1, stride=1, padding=1)
         self.audioInstanceNorm6 = nn.InstanceNorm2d(512)
 
         self.leakyrelu = nn.LeakyReLU(0.2)
