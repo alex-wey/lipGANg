@@ -168,6 +168,7 @@ for e in range(args.epochs):
 
 		### Train generator 
 		gen.train()
+		gen.optimizer.step()
 
 		if (batch_idx + 1) % (args.checkpoint_freq // 10) == 0:
 			if (batch_idx + 1) % args.checkpoint_freq == 0:
