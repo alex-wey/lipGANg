@@ -167,17 +167,7 @@ for e in range(args.epochs):
 		d_sync_loss += disc.contrastive_loss(real, d_sync_out)
 
 		### Train generator 
-		total, mae, adv = gen.train_on_batch([dummy_faces, audio], [real_faces, real])
-		gen_loss_mae += mae
-		gen_loss_adv += adv
-
-		prog_bar.set_description('Disc_loss: {}, Unsynced: {}, Synced: {}, MAE: {} Adv_loss: {}'.format(\
-														round(disc_loss / (batch_idx + 1), 3), 
-														round(unsync_loss / (batch_idx + 1), 3), 
-														round(sync_loss / (batch_idx + 1), 3),
-														round(gen_loss_mae / (batch_idx + 1), 3),
-														round(gen_loss_adv / (batch_idx + 1), 3)))
-		prog_bar.refresh()
+		gen.train()
 
 		if (batch_idx + 1) % (args.checkpoint_freq // 10) == 0:
 			if (batch_idx + 1) % args.checkpoint_freq == 0:
