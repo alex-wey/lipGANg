@@ -44,9 +44,6 @@ class Generator_Model(nn.Module):
         """
         super(Generator_Model, self).__init__()
 
-        # Optimizer
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=0.001, betas=(0.5, 0.999))
-
         # audio encoder
         self.audio_encoder = nn.Sequential(
             conv_block(1, 32, kernel_size=3, stride=1, padding=1),
@@ -114,6 +111,9 @@ class Generator_Model(nn.Module):
         self.output_block = nn.Sequential(conv_block(80, 32, kernel_size=3, stride=1, padding=1),
             nn.conv_block(32, 3, kernel_size=1, stride=1, padding=0),
             nn.Sigmoid())
+
+        # Optimizer
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=0.001, betas=(0.5, 0.999))
 
     def forward(self, audio_sequences, face_sequences):
         # audio_sequences = (B, T, 1, 80, 16)

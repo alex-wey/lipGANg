@@ -3,9 +3,9 @@ import numpy as np
 import scipy
 import cv2
 import os, sys
-import discriminator2 as Discriminator_Model
+from discriminator2 import Discriminator_Model
 import torch
-import Generator_Model
+from generator import Generator_Model
 from tqdm import tqdm
 from glob import glob
 import pickle, argparse
@@ -170,14 +170,14 @@ for e in range(args.epochs):
 		gen.train()
 		gen.optimizer.step()
 
-		if (batch_idx + 1) % (args.checkpoint_freq // 10) == 0:
-			if (batch_idx + 1) % args.checkpoint_freq == 0:
-				disc.save(path.join(args.logdir, 'disc.h5'))
-				gen.save(path.join(args.logdir, 'gen.h5'))
+		# if (batch_idx + 1) % (args.checkpoint_freq // 10) == 0:
+		# 	if (batch_idx + 1) % args.checkpoint_freq == 0:
+		# 		disc.save(path.join(args.logdir, 'disc.h5'))
+		# 		gen.save(path.join(args.logdir, 'gen.h5'))
 	
-			collage = np.concatenate([dummy_faces[...,:3], real_faces, gen_fakes], axis=2)
-			collage *= 255.
-			collage = np.clip(collage, 0., 255.).astype(np.uint8)
+		# 	collage = np.concatenate([dummy_faces[...,:3], real_faces, gen_fakes], axis=2)
+		# 	collage *= 255.
+		# 	collage = np.clip(collage, 0., 255.).astype(np.uint8)
 			
-			for i in range(len(collage)):
-				cv2.imwrite(path.join(args.logdir, 'gen_faces/{}.jpg'.format(i)), collage[i])
+		# 	for i in range(len(collage)):
+		# 		cv2.imwrite(path.join(args.logdir, 'gen_faces/{}.jpg'.format(i)), collage[i])
