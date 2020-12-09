@@ -109,7 +109,7 @@ class Generator_Model(nn.Module):
             ])
 
         self.output_block = nn.Sequential(conv_block(80, 32, kernel_size=3, stride=1, padding=1),
-            nn.conv_block(32, 3, kernel_size=1, stride=1, padding=0),
+            conv_block(32, 3, kernel_size=1, stride=1, padding=0),
             nn.Sigmoid())
 
         # Optimizer

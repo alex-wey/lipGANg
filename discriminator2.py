@@ -16,9 +16,11 @@ class LambdaLayer(nn.Module):
 
 class Discriminator_Model(nn.Module):
     def __init__(self):
+        """
+        The model for the discriminator is defined here.
+        """
+        super(Discriminator_Model, self).__init__()
         self.learning_rate = 0.001
-
-        self.leakyrelu = nn.LeakyReLU(0.2)
         
         # Face video encoder layers
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=1, padding=3)
@@ -31,7 +33,7 @@ class Discriminator_Model(nn.Module):
         self.instanceNorm4 = nn.InstanceNorm2d(512)
         self.conv5 = nn.Conv2d(512, 512, kernel_size=3, stride=2, padding=1)
         self.instanceNorm5 = nn.InstanceNorm2d(512)
-        self.conv6 = nn.conv2D(filters=512, kernel_size=3, strides=1, padding=0)
+        self.conv6 = nn.Conv2d(filters=512, kernel_size=3, strides=1, padding=0)
         
         # Audio encoder layers
         self.audioConv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
@@ -46,6 +48,8 @@ class Discriminator_Model(nn.Module):
         self.audioInstanceNorm5 = nn.InstanceNorm2d(512)
         self.audioConv6 = nn.conv2D(512, 512, kernel_size=1, stride=1, padding=1)
         self.audioInstanceNorm6 = nn.InstanceNorm2d(512)
+
+        self.leakyrelu = nn.LeakyReLU(0.2)
   
         self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
 
