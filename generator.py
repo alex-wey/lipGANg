@@ -3,14 +3,14 @@ from torch import nn
 import math
 
 class conv_block(nn.Module):
-    def __init__(self, cin, cout, kernel_size, stride, padding, residual=False):
+    def __init__(self, channel_in, channel_out, kernel_size, stride, padding, residual=False):
         """
         Convolution block w/ forward pass
         """
         super().__init__()
         self.block = nn.Sequential(
                     nn.Conv2d(channel_in, channel_out, kernel_size, stride, padding),
-                    nn.BatchNorm2d(cout)
+                    nn.BatchNorm2d(channel_out)
                     )
         self.act = nn.ReLU()
         self.residual = residual
@@ -29,7 +29,7 @@ class conv_t_block(nn.Module):
         super().__init__()
         self.block = nn.Sequential(
                     nn.ConvTranspose2d(channel_in, channel_out, kernel_size, stride, padding, output_padding),
-                    nn.BatchNorm2d(cout)
+                    nn.BatchNorm2d(channel_out)
                     )
         self.act = nn.ReLU()
 

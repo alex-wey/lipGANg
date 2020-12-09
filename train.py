@@ -173,8 +173,7 @@ for e in range(args.epochs):
 			if (batch_idx + 1) % args.checkpoint_freq == 0:
 				disc.save(path.join(args.logdir, 'disc.h5'))
 				gen.save(path.join(args.logdir, 'gen.h5'))
-				comb.save(path.join(args.logdir, 'comb.h5'))
-
+	
 			collage = np.concatenate([dummy_faces[...,:3], real_faces, gen_fakes], axis=2)
 			collage *= 255.
 			collage = np.clip(collage, 0., 255.).astype(np.uint8)
