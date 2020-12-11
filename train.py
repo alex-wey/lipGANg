@@ -98,17 +98,14 @@ parser.add_argument('--n_gpu', type=int, help='Number of GPUs to use', default=1
 parser.add_argument('--batch_size', type=int, help='Single GPU batch size', default=96)
 parser.add_argument('--lr', type=float, help='Initial learning rate', default=1e-4)
 parser.add_argument('--img_size', type=int, help='Size of input image', default=96)
-parser.add_argument('--epochs', type=int, help='Number of epochs', default=20000000)
+parser.add_argument('--epochs', type=int, help='Number of epochs', default=20000)
 
 parser.add_argument('--all_images', default='filenames.pkl', help='Filename for caching image paths')
 args = parser.parse_args()
 
-if path.exists(path.join(args.logdir, args.all_images)):
-	args.all_images = pickle.load(open(path.join(args.logdir, args.all_images), 'rb'))
-else:
-	all_images = glob(path.join("{}/train/*/*/*.jpg".format(args.data_root)))
-	pickle.dump(all_images, open(path.join(args.logdir, args.all_images), 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
-	args.all_images = all_images
+all_images = glob(path.join("{}/*/*/*.jpg".format(args.data_root)))
+pickle.dump(all_images, open(path.join(args.logdir, args.all_images), 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+args.all_images = all_images
 
 print ("Will be training on {} images".format(len(args.all_images)))
 
@@ -145,6 +142,8 @@ for e in range(args.epochs):
 		fake = np.ones((len(real_faces), 1))
 
 		gen_fakes = gen(audio, dummy_faces) # predict fake
+		
+		print(gen_fakes)
 
 ### TODO: Adjust / convert everything below this line
 		### Train Discriminator
