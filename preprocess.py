@@ -12,6 +12,8 @@ from tqdm import tqdm
 import dlib, audio
 
 detector = dlib.get_frontal_face_detector()
+
+# citation: I used the preprocess code from the lipgan paper and added to it so that it would work from my computer
 	
 def rect_to_bb(rect):
 	x = rect.left()
