@@ -16,16 +16,6 @@ class conv_block(nn.Module):
         self.residual = residual
 
     def forward(self, x):
-        # out = self.block(x)
-        # print(out.size())
-        # print(x.size())
-        # if self.residual:
-        #     out += x
-        # return self.act(out)
-
-        # if self.residual:
-        #     return self.act(self.block(x)) #+ x)
-        # else:
         return self.act(self.block(x))
 
 class conv_t_block(nn.Module):
