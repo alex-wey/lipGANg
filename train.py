@@ -3,7 +3,7 @@ import numpy as np
 import scipy
 import cv2
 import os, sys
-from discriminator2 import Discriminator_Model
+from discriminator import Discriminator_Model
 import torch
 from generator import Generator_Model
 from tqdm import tqdm
