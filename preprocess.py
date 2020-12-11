@@ -126,16 +126,11 @@ parser.add_argument('--split', help='LRS2 dataset split to preprocess', default=
 parser.add_argument('--num_workers', help='Number of workers to run in parallel', default=10, type=int)
 parser.add_argument('--filelists', help='List of train, val, test, pretrain files', default='./filelists/')
 parser.add_argument("--videos_data_root", help="Root folder of LRS", required=True)
-
 parser.add_argument("--final_data_root", help="Folder where preprocessed files will reside", 
 					required=True)
-
-### hyperparams ####
 parser.add_argument("--img_size", help="Square face image to resize to", default=96, type=int)
 
 args = parser.parse_args()
-print(args)
-print("fds")
 
 if __name__ == '__main__':
 	dump_split(args)
