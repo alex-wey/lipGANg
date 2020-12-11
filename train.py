@@ -84,9 +84,9 @@ def datagen(args):
 			
 			yield [img_ip_batch/255.0, mel_batch], img_gt_batch/255.0
 
-parser = argparse.ArgumentParser(description='Keras implementation of LipGAN')
+parser = argparse.ArgumentParser(description='Pytorch implementation of LipGAN')
 
-parser.add_argument('--data_root', type=str, help='LRS2 preprocessed dataset root to train on', required=True)
+parser.add_argument('--data_root', type=str, help='LRS3 preprocessed dataset root to train on', required=True)
 parser.add_argument('--logdir', type=str, help='Folder to store checkpoints & generated images', default='logs/')
 
 parser.add_argument('--model', type=str, help='Model name to use: basic|residual', default='residual')
@@ -166,18 +166,18 @@ for e in range(args.epochs):
 		d_sync_out = disc(real_faces, mel_step_size, real)
 		d_sync_loss += disc.contrastive_loss(real, d_sync_out)
 
-		### Train generator 
+		# train generator 
 		gen.train()
 		gen.optimizer.step()
 
-		# if (batch_idx + 1) % (args.checkpoint_freq // 10) == 0:
-		# 	if (batch_idx + 1) % args.checkpoint_freq == 0:
-		# 		disc.save(path.join(args.logdir, 'disc.h5'))
-		# 		gen.save(path.join(args.logdir, 'gen.h5'))
+		if (batch_idx + 1) % (args.checkpoint_freq // 10) == 0:
+			if (batch_idx + 1) % args.checkpoint_freq == 0:
+				disc.save(path.join(args.logdir, 'disc.h5'))
+				gen.save(path.join(args.logdir, 'gen.h5'))
 	
-		# 	collage = np.concatenate([dummy_faces[...,:3], real_faces, gen_fakes], axis=2)
-		# 	collage *= 255.
-		# 	collage = np.clip(collage, 0., 255.).astype(np.uint8)
+			collage = np.concatenate([dummy_faces[...,:3], real_faces, gen_fakes], axis=2)
+			collage *= 255.
+			collage = np.clip(collage, 0., 255.).astype(np.uint8)
 			
-		# 	for i in range(len(collage)):
-		# 		cv2.imwrite(path.join(args.logdir, 'gen_faces/{}.jpg'.format(i)), collage[i])
+			for i in range(len(collage)):
+				cv2.imwrite(path.join(args.logdir, 'gen_faces/{}.jpg'.format(i)), collage[i])

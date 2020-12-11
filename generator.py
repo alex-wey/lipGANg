@@ -16,10 +16,10 @@ class conv_block(nn.Module):
         self.residual = residual
 
     def forward_pass(self, x):
-        out = self.block(x)
         if self.residual:
-            out += x
-        return self.act(out)
+            return self.act(self.block(x) + x)
+        else:
+            return self.act(self.block(x))
 
 class conv_t_block(nn.Module):
     def __init__(self, channel_in, channel_out, kernel_size, stride, padding, output_padding=0):
@@ -34,8 +34,7 @@ class conv_t_block(nn.Module):
         self.act = nn.ReLU()
 
     def forward_pass(self, x):
-        output = self.block(x)
-        return self.act(output)
+        return self.act(self.block(x))
 
 class Generator_Model(nn.Module):
     def __init__(self):
@@ -108,52 +107,36 @@ class Generator_Model(nn.Module):
             conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True))
             ])
 
-        self.output_block = nn.Sequential(conv_block(80, 32, kernel_size=3, stride=1, padding=1),
+        # output blocks for face prediction
+        self.pred_output = nn.Sequential(conv_block(80, 32, kernel_size=3, stride=1, padding=1),
             conv_block(32, 3, kernel_size=1, stride=1, padding=0),
             nn.Sigmoid())
 
-        # Optimizer
+        # optimizer
         self.optimizer = torch.optim.Adam(self.parameters(), lr=0.001, betas=(0.5, 0.999))
 
-    def forward(self, audio_sequences, face_sequences):
-        # audio_sequences = (B, T, 1, 80, 16)
-        B = audio_sequences.size(0)
+    # performs foward pass on model during training
+    def forward(self, audio_seq, face_seq):
 
-        input_dim_size = len(face_sequences.size())
-        if input_dim_size > 4:
+        if len(face_sequences.size()) > 4:
             pass
             # audio_sequences = torch.cat([audio_sequences[:, i] for i in range(audio_sequences.size(1))], dim=0)
             # face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
 
-        audio_embedding = self.audio_encoder(audio_sequences) # B, 512, 1, 1
+        audio_embedding = self.audio_encoder(audio_sequences)
 
-        feats = []
-        x = face_sequences
-        for f in self.face_encoder_blocks:
-            x = f(x)
-            feats.append(x)
+        output = face_seq
+        for block in self.face_encoder:
+            output = block(output)
 
-        x = audio_embedding
-        for f in self.face_decoder_blocks:
-            x = f(x)
+        output = audio_embedding
+        for block in self.face_decoder:
+            output = block(x)
             try:
-                x = torch.cat((x, feats[-1]), dim=1)
+                output = torch.cat((output, feats[-1]), dim=1)
             except Exception as e:
-                print(x.size())
-                print(feats[-1].size())
                 raise e
-            
-            feats.pop()
 
-        outputs = self.output_block(x)
-
-        # x = self.output_block(x)
-
-        # if input_dim_size > 4:
-        #     x = torch.split(x, B, dim=0) # [(B, C, H, W)]
-        #     outputs = torch.stack(x, dim=2) # (B, C, T, H, W)
-
-        # else:
-        #     outputs = x
+        outputs = self.pred_output(x)
             
         return outputs
