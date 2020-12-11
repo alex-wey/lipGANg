@@ -67,7 +67,7 @@ def datagen(args):
 				img_gt = cv2.resize(img_gt, (args.img_size, args.img_size))
 				
 				ip_fname = choose_ip_frame(frames, gt_fname)
-				img_ip = cv2.imread(os.path.join(dir_name, ip_fname))
+				img_ip = cv2.imread(ip_fname)
 				img_ip = cv2.resize(img_ip, (args.img_size, args.img_size))
 				
 				img_gt_batch.append(img_gt)
@@ -77,10 +77,12 @@ def datagen(args):
 			img_gt_batch = np.asarray(img_gt_batch)
 			img_ip_batch = np.asarray(img_ip_batch)
 			mel_batch = np.expand_dims(np.asarray(mel_batch), 3)
+			mel_batch = np.reshape(mel_batch, (len(mel_batch), 1, 80, 27))
 			
 			img_gt_batch_masked = img_gt_batch.copy()
 			img_gt_batch_masked[:, args.img_size//2:,...] = 0.
 			img_ip_batch = np.concatenate([img_ip_batch, img_gt_batch_masked], axis=3)
+			img_ip_batch = np.reshape(img_ip_batch, (len(img_ip_batch), 6, 96, 96))
 			
 			yield [img_ip_batch/255.0, mel_batch], img_gt_batch/255.0
 
@@ -107,9 +109,9 @@ all_images = glob(path.join("{}/*/*/*.jpg".format(args.data_root)))
 pickle.dump(all_images, open(path.join(args.logdir, args.all_images), 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 args.all_images = all_images
 
-print ("Will be training on {} images".format(len(args.all_images)))
+print("Will be training on {} images".format(len(args.all_images)))
 
-# Initialize the generator and the Discriminator
+# initialize the generator and the Discriminator
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 gen = Generator_Model()
@@ -118,7 +120,7 @@ disc = Discriminator_Model() # Pytorch
 gen = gen.to(device)
 disc = disc.to(device)
 
-# Use an already-created generator or discriminator
+# use an already-created generator or discriminator
 if args.resume_gen:
 	gen.load_state_dict(torch.load(args.resume_gen))
 	print('Resuming generator from : {}'.format(args.resume_gen))
@@ -138,32 +140,32 @@ for e in range(args.epochs):
 		disc.train()
 
 		(dummy_faces, audio), real_faces = next(train_datagen)
-		real = np.zeros((len(real_faces), 1))
-		fake = np.ones((len(real_faces), 1))
+		real = torch.tensor(np.zeros((len(real_faces), 1)), dtype=torch.float)
+		fake = torch.tensor(np.ones((len(real_faces), 1)), dtype=torch.float)
+		dummy_faces = torch.tensor(dummy_faces, dtype=torch.float)
+		audio = torch.tensor(audio, dtype=torch.float)
+		real_faces = torch.tensor(real_faces, dtype=torch.float)
 
 		gen_fakes = gen(audio, dummy_faces) # predict fake
-		
-		print(gen_fakes)
 
-### TODO: Adjust / convert everything below this line
-		### Train Discriminator
-		disc.optimizer.zero_grad()
-		gen.optimizer.zero_grad()
+		# # Train Discriminator
+		# disc.optimizer.zero_grad()
+		# gen.optimizer.zero_grad()
 
-		# Replaced: disc_loss += disc.train_on_batch...
-		d_output = disc(gen_fakes, mel_step_size, fake)
-		d_loss += disc.contrastive_loss(fake, d_output)
+		# # Replaced: disc_loss += disc.train_on_batch...
+		# d_output = disc(gen_fakes, mel_step_size, fake)
+		# d_loss += disc.contrastive_loss(fake, d_output)
 
-		# Replaced: disc_loss += disc.test_on_batch...
-		disc.eval()
-		with torch.nograd:
-			d_test_out = disc(real_faces, mel_step_size, fake)
-			d_unsync_loss = disc.contrastive_loss(fake, d_test_out)
-		disc.train()
+		# # Replaced: disc_loss += disc.test_on_batch...
+		# disc.eval()
+		# with torch.nograd:
+		# 	d_test_out = disc(real_faces, mel_step_size, fake)
+		# 	d_unsync_loss = disc.contrastive_loss(fake, d_test_out)
+		# disc.train()
 
-		# Replace: disc.train_on_batch([real_faces, audio], real)
-		d_sync_out = disc(real_faces, mel_step_size, real)
-		d_sync_loss += disc.contrastive_loss(real, d_sync_out)
+		# # Replace: disc.train_on_batch([real_faces, audio], real)
+		# d_sync_out = disc(real_faces, mel_step_size, real)
+		# d_sync_loss += disc.contrastive_loss(real, d_sync_out)
 
 		# train generator 
 		gen.train()

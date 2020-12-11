@@ -23,14 +23,8 @@ class Discriminator_Model(nn.Module):
         self.learning_rate = 0.001
         
         # Face video encoder layers
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=1, padding=3)
-        self.instanceNorm1 = nn.InstanceNorm2d(64)
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=5, stride=(1,2), padding=2)
-        self.instanceNorm2 = nn.InstanceNorm2d(128)
-        self.conv3 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1)
-        self.instanceNorm3 = nn.InstanceNorm2d(256)
-        self.conv4 = nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1)
-        self.instanceNorm4 = nn.InstanceNorm2d(512)
+        self.conv1 = nn.Conv2d(3, 512, kernel_size=7, stride=1, padding=3)
+        self.instanceNorm1 = nn.InstanceNorm2d(512)
         self.conv5 = nn.Conv2d(512, 512, kernel_size=3, stride=2, padding=1)
         self.instanceNorm5 = nn.InstanceNorm2d(512)
         self.conv6 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=0)
@@ -60,9 +54,10 @@ class Discriminator_Model(nn.Module):
 
     def forward(self, inputs, labels, mel_step_size):
         ############# encoder for face/identity
-        input_face = torch.randn((inputs.img_size, inputs.img_size, 3))
+        # input_face = torch.randn((inputs.img_size, inputs.img_size, 3))
+        input_face = torch.randn(list(inputs.size()))
         # Converted SAME padding to an int padding variable calculated with k = (n-1)/2
-        x = self.leakyrelu(self.instanceNorm1(self.conv1(x)))
+        x = self.leakyrelu(self.instanceNorm1(self.conv1(input_face)))
         x = self.leakyrelu(self.instanceNorm2(self.conv2(x)))
         x = self.leakyrelu(self.instanceNorm3(self.conv3(x)))
         x = self.leakyrelu(self.instanceNorm4(self.conv4(x)))

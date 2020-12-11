@@ -15,11 +15,18 @@ class conv_block(nn.Module):
         self.act = nn.ReLU()
         self.residual = residual
 
-    def forward_pass(self, x):
-        if self.residual:
-            return self.act(self.block(x) + x)
-        else:
-            return self.act(self.block(x))
+    def forward(self, x):
+        # out = self.block(x)
+        # print(out.size())
+        # print(x.size())
+        # if self.residual:
+        #     out += x
+        # return self.act(out)
+
+        # if self.residual:
+        #     return self.act(self.block(x)) #+ x)
+        # else:
+        return self.act(self.block(x))
 
 class conv_t_block(nn.Module):
     def __init__(self, channel_in, channel_out, kernel_size, stride, padding, output_padding=0):
@@ -33,7 +40,7 @@ class conv_t_block(nn.Module):
                     )
         self.act = nn.ReLU()
 
-    def forward_pass(self, x):
+    def forward(self, x):
         return self.act(self.block(x))
 
 class Generator_Model(nn.Module):
@@ -45,9 +52,9 @@ class Generator_Model(nn.Module):
 
         # audio encoder
         self.audio_encoder = nn.Sequential(
-            conv_block(1, 32, kernel_size=3, stride=1, padding=1),
-            conv_block(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
-
+            conv_block(1, 32, kernel_size=1, stride=1, padding=1),
+            conv_block(32, 32, kernel_size=1, stride=1, padding=1, residual=True),
+            
             conv_block(32, 64, kernel_size=3, stride=(3, 1), padding=1),
             conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
 
@@ -88,27 +95,27 @@ class Generator_Model(nn.Module):
         self.face_decoder = nn.ModuleList([
             nn.Sequential(conv_block(512, 512, kernel_size=1, stride=1, padding=0),),
 
-            nn.Sequential(conv_t_block(1024, 512, kernel_size=3, stride=1, padding=0),
-            conv_block(512, 512, kernel_size=3, stride=1, padding=1, residual=True)),
+            nn.Sequential(conv_t_block(512, 512, kernel_size=3, stride=1, padding=0),
+            conv_block(512, 1024, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(1024, 512, kernel_size=3, stride=2, padding=1, output_padding=1),
-            conv_block(512, 512, kernel_size=3, stride=1, padding=1, residual=True)),
+            conv_block(512, 768, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(768, 384, kernel_size=3, stride=2, padding=1, output_padding=1),
-            conv_block(384, 384, kernel_size=3, stride=1, padding=1, residual=True)),
+            conv_block(384, 512, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(512, 256, kernel_size=3, stride=2, padding=1, output_padding=1),
-            conv_block(256, 256, kernel_size=3, stride=1, padding=1, residual=True)),
+            conv_block(256, 320, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(320, 128, kernel_size=3, stride=2, padding=1, output_padding=1), 
-            conv_block(128, 128, kernel_size=3, stride=1, padding=1, residual=True)),
+            conv_block(128, 160, kernel_size=3, stride=1, padding=1, residual=True)),
 
             nn.Sequential(conv_t_block(160, 64, kernel_size=3, stride=2, padding=1, output_padding=1),
             conv_block(64, 64, kernel_size=3, stride=1, padding=1, residual=True))
             ])
 
         # output blocks for face prediction
-        self.pred_output = nn.Sequential(conv_block(80, 32, kernel_size=3, stride=1, padding=1),
+        self.pred_output = nn.Sequential(conv_block(64, 32, kernel_size=3, stride=1, padding=1),
             conv_block(32, 3, kernel_size=1, stride=1, padding=0),
             nn.Sigmoid())
 
@@ -117,26 +124,26 @@ class Generator_Model(nn.Module):
 
     # performs foward pass on model during training
     def forward(self, audio_seq, face_seq):
+        
+        audio_embedding = self.audio_encoder(audio_seq)
 
-        if len(face_sequences.size()) > 4:
-            pass
-            # audio_sequences = torch.cat([audio_sequences[:, i] for i in range(audio_sequences.size(1))], dim=0)
-            # face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
-
-        audio_embedding = self.audio_encoder(audio_sequences)
-
+        features = []
         output = face_seq
         for block in self.face_encoder:
             output = block(output)
+            features.append(output)
 
         output = audio_embedding
         for block in self.face_decoder:
-            output = block(x)
+            output = block(output)
             try:
-                output = torch.cat((output, feats[-1]), dim=1)
+                output = torch.cat((output, features[-1]), dim=1)
             except Exception as e:
-                raise e
+                pass
 
-        outputs = self.pred_output(x)
+            features.pop()
+
+        outputs = self.pred_output(output)
             
         return outputs
+ 
