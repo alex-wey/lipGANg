@@ -47,13 +47,14 @@ class Discriminator_Model(nn.Module):
   
         self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, betas=(0.5, 0.999))
 
+    # loss function
     def contrastive_loss(self, y_true, y_pred):
         margin = 1.
         loss = (1. - y_true) * torch.square(y_pred) + y_true * torch.square(torch.maximum(0., margin - y_pred))
         return torch.mean(loss)
 
     def forward(self, inputs, labels, mel_step_size):
-        ############# encoder for face/identity
+        # face encoder
         # input_face = torch.randn((inputs.img_size, inputs.img_size, 3))
         input_face = torch.randn(list(inputs.size()))
         # Converted SAME padding to an int padding variable calculated with k = (n-1)/2
@@ -65,7 +66,7 @@ class Discriminator_Model(nn.Module):
         x = self.conv6(x)
         face_embedding = torch.flatten(x)
         
-        ############# encoder for audio
+        # audio encoder
         input_audio = torch.randn((80, mel_step_size, 1))
         x = self.leakyrelu(self.audioInstanceNorm1(self.audioConv1(input_audio)))
         x = self.leakyrelu(self.audioInstanceNorm2(self.audioConv2(x)))
